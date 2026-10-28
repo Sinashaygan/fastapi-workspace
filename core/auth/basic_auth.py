@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 security = HTTPBasic()
 
-def get_current_username(
+def get_authenticated_user(
     credentials: HTTPBasicCredentials = Depends(security),
     db: Session = Depends(get_db)
 ):
