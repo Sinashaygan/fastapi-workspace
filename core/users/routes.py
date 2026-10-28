@@ -1,13 +1,22 @@
+import secrets
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 from users.schemas import *
-from users.models import UserModel
+from users.models import TokenModel, UserModel
 from sqlalchemy.orm import Session
 from core.database import get_db
 
 router = APIRouter(tags=["users"], prefix="/users")
+
+
+def generate_random_token(length: int = 32) -> str:
+    """
+    تولید یک توکن امن تصادفی (Base64 URL-safe)
+    خروجی به صورت رشته‌ای از کاراکترها بدون نیاز به هیچ پکیج اضافی است.
+    """
+    return secrets.token_urlsafe(length)
 
 
 @router.post("/login")
@@ -18,10 +27,17 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT, detail="username does not exist."
         )
     if not user_obj.verify_password(request.password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST , detail="password is invalid")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="password is invalid"
+        )
 
-    return []
-
+    token_obj = TokenModel(userId=user_obj.id, token=generate_random_token())
+    db.add(token_obj)
+    db.commit()
+    db.refresh(token_obj)
+    return JSONResponse(
+        content={"detail": "logged in successfully", "token": token_obj.token}
+    )
 
 
 @router.post("/register")
