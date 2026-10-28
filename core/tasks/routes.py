@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.responses import JSONResponse
 from tasks.shemas import *
 from tasks.models import TaskModel
@@ -20,7 +20,10 @@ async def retrieve_tasks_list(db: Session = Depends(get_db)):
 async def retrieve_task_by_id(
     task_id: int = Path(..., gt=0), db: Session = Depends(get_db)
 ):
-    return {"task_id": task_id}
+    task_obj = db.query(TaskModel).filter_by(id=task_id).first()
+    if not task_obj:
+        raise HTTPException(status_code=404 , detail="Task not found")
+    return task_obj
 
 
 @router.post("/tasks", response_model=TaskResponseSchema)
