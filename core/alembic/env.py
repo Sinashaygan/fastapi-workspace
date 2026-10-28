@@ -29,6 +29,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from tasks.models import *
+from users.models import *
 
 # اضافه کردن متادیتای مدل‌ها برای پشتیبانی از autogenerate
 target_metadata = Base.metadata
