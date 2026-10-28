@@ -1,17 +1,14 @@
-
-
 from datetime import datetime, timedelta, timezone
-
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
-from requests import Session
-
+from sqlalchemy.orm import Session
 from core.config import settings
 from core.database import get_db
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 3600
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 5
+REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 
 security = HTTPBearer(scheme_name="Token")
 
 def get_authenticated_user(
@@ -45,6 +42,7 @@ def generate_access_token(user_id: int | str, payload: dict | None = None, expir
     # iat: زمان صدور (Issued At)
     # exp: زمان انقضا (Expiration Time)
     to_encode.update({
+        "type": "access",
         "sub": str(user_id),
         "user_id": user_id,  # اضافه کردن صریح user_id در صورت نیاز
         "iat": now,
@@ -53,3 +51,28 @@ def generate_access_token(user_id: int | str, payload: dict | None = None, expir
 
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def generate_refresh_token(user_id: int | str, expires_delta: timedelta | None = None) -> str:
+    """
+    تولید Refresh Token با pyjwt
+    - user_id: شناسه کاربر
+    - expires_delta: مدت زمان دلخواه انقضا (در صورت عدم ارسال، پیش‌فرض ۲۴ ساعت اعمال می‌شود)
+    """
+    now = datetime.now(timezone.utc)
+    
+    if expires_delta:
+        expire = now + expires_delta
+    else:
+        expire = now + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+
+    to_encode = {
+        "type": "refresh",     # نوع توکن برای جلوگیری از سوءاستفاده به عنوان access token
+        "sub": str(user_id),
+        "user_id": user_id,
+        "iat": now,
+        "exp": expire,
+    }
+
+    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+    
