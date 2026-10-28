@@ -3,6 +3,8 @@ from core.database import Base
 from sqlalchemy.orm import relationship
 from passlib.context import CryptContext
 
+# راه‌اندازی تنظیمات هشینگ با استفاده از الگوریتم bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserModel(Base):
     __tablename__ = "users"
@@ -17,15 +19,14 @@ class UserModel(Base):
 
     tasks = relationship("TaskModel" , back_populates="user")
 
-    # راه‌اندازی تنظیمات هشینگ با استفاده از الگوریتم bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    def hash_password(password: str) -> str:
+        """پسورد متنی را دریافت کرده و نسخه هش‌شده آن را برمی‌گرداند."""
+        return pwd_context.hash(password)
 
 
-def hash_password(password: str) -> str:
-    """پسورد متنی را دریافت کرده و نسخه هش‌شده آن را برمی‌گرداند."""
-    return pwd_context.hash(password)
+    def verify_password(plain_password: str, hashed_password: str) -> bool:
+        """پسورد وارد شده توسط کاربر را با پسورد هش‌شده داخل دیتابیس مقایسه می‌کند."""
+        return pwd_context.verify(plain_password, hashed_password)
 
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """پسورد وارد شده توسط کاربر را با پسورد هش‌شده داخل دیتابیس مقایسه می‌کند."""
-    return pwd_context.verify(plain_password, hashed_password)
+    def set_password(self,plain_text:str)->None:
+        self.password = self.hash_password(plain_text)
