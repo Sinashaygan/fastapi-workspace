@@ -7,11 +7,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 from requests import Session
 
+from core.config import settings
 from core.database import get_db
 
-SECRET_KEY = "your-very-secure-secret-key"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 3600
 security = HTTPBearer(scheme_name="Token")
 
 def get_authenticated_user(
@@ -51,5 +51,5 @@ def generate_access_token(user_id: int | str, payload: dict | None = None, expir
         "exp": expire,
     })
 
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

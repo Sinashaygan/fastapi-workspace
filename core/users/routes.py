@@ -3,6 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
+from auth.jwt_auth import generate_access_token
 from users.schemas import *
 from users.models import TokenModel, UserModel
 from sqlalchemy.orm import Session
@@ -31,12 +32,15 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST, detail="password is invalid"
         )
 
-    token_obj = TokenModel(userId=user_obj.id, token=generate_random_token())
-    db.add(token_obj)
-    db.commit()
-    db.refresh(token_obj)
+    # token_obj = TokenModel(userId=user_obj.id, token=generate_random_token())
+    # db.add(token_obj)
+    # db.commit()
+    # db.refresh(token_obj)
+    
+    access_token = generate_access_token(user_obj.id)
+
     return JSONResponse(
-        content={"detail": "logged in successfully", "token": token_obj.token}
+        content={"detail": "logged in successfully", "access_token": access_token}
     )
 
 
