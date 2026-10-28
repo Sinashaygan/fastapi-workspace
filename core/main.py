@@ -1,8 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
-from fastapi.security import APIKeyHeader
-from auth.basic_auth import get_authenticated_user
-from users.models import UserModel
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from tasks.routes import router as tasks_routes
 from users.routes import router as users_routes
 
@@ -34,8 +32,8 @@ app = FastAPI(
 app.include_router(tasks_routes)
 app.include_router(users_routes)
 
-header_schema = APIKeyHeader(name="x-key")
-
+# header_schema = APIKeyHeader(name="x-key")
+security = HTTPBearer(scheme_name="token")
 
 @app.get("/public")
 def public_route():
@@ -43,6 +41,6 @@ def public_route():
 
 
 @app.get("/private")
-def private_route(api_key=Depends(header_schema)):
-    print(api_key)
+def private_route(credentials:HTTPAuthorizationCredentials = Depends(security)):
+    print(credentials)
     return {"message": "This is a private route."}
