@@ -27,13 +27,31 @@ async def retrieve_task_by_id(
 
 
 @router.post("/tasks", response_model=TaskResponseSchema)
-async def create_task():
-    return []
+async def create_task(request:TaskCreateSchema, db: Session = Depends(get_db)):
+    task_obj = TaskModel(**request.model_dump())
+    db.add(task_obj)
+    db.commit()
+    db.refresh()
+    return task_obj
 
 
 @router.put("/tasks/{task_id}", response_model=TaskResponseSchema)
-async def update_task(task_id: int = Path(..., gt=0), db: Session = Depends(get_db)):
-    return {}
+async def update_task(
+    request: TaskUpdateSchema,
+    task_id: int = Path(..., gt=0),
+    db: Session = Depends(get_db)
+):
+    task_obj = db.query(TaskModel).filter_by(id=task_id).first()
+    if not task_obj:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    for field, value in request.model_dump(exclude_unset=True).items():
+        setattr(task_obj, field, value)
+
+    db.commit()  
+    db.refresh(task_obj)  
+
+    return task_obj 
 
 
 @router.delete("/tasks/{task_id}")
