@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.responses import JSONResponse
 from tasks.shemas import *
 from tasks.models import TaskModel
@@ -11,9 +11,11 @@ router = APIRouter(tags=["tasks"], prefix="/todo")
 
 
 @router.get("/tasks", response_model=List[TaskResponseSchema])
-async def retrieve_tasks_list(db: Session = Depends(get_db)):
-    result = db.query(TaskModel).all()
-    return result
+async def retrieve_tasks_list(completed:bool = Query(None , description="filter tasks based on being completed or not"),db: Session = Depends(get_db)):
+    query = db.query(TaskModel)
+    if completed is not None:
+        query = query.filter_by(is_completed = completed)
+    return query.all()
 
 
 @router.get("/tasks/{task_id}", response_model=TaskResponseSchema)
