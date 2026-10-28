@@ -40,5 +40,5 @@ def public_route():
 
 @app.get("/private")
 def private_route(user = Depends(get_authenticated_user)):
-    # print(credentials)
+    print(user.username)
     return {"message": "This is a private route."}
