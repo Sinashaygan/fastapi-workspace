@@ -38,7 +38,7 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
     # db.refresh(token_obj)
 
     access_token = generate_access_token(user_obj.id)
-    refresh_token = generate_refresh_token()
+    refresh_token = generate_refresh_token(user_obj.id)
 
     return JSONResponse(
         content={
