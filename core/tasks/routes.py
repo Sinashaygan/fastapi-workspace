@@ -12,7 +12,8 @@ router = APIRouter(tags=["tasks"], prefix="/todo")
 
 @router.get("/tasks", response_model=List[TaskResponseSchema])
 async def retrieve_tasks_list(db: Session = Depends(get_db)):
-    return []
+    result = db.query(TaskModel).all()
+    return result
 
 
 @router.get("/tasks/{task_id}", response_model=TaskResponseSchema)
@@ -32,6 +33,6 @@ async def update_task(task_id: int = Path(..., gt=0), db: Session = Depends(get_
     return {}
 
 
-@router.delete("/tasks/{task_id}", response_model=JSONResponse())
+@router.delete("/tasks/{task_id}")
 async def delete_task(task_id: int = Path(..., gt=0), db: Session = Depends(get_db)):
     return {}
