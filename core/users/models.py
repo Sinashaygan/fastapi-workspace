@@ -1,5 +1,6 @@
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
 from core.database import Base
+from sqlalchemy.orm import relationship
 
 
 class UserModel(Base):
@@ -9,6 +10,8 @@ class UserModel(Base):
     username = Column(String(250), nullable=False)
     password = Column(String, nullable=False)
     is_active= Column(Boolean, default=True)
-    
+
     created_date = Column(DateTime, server_default=func.now())
     updated_date = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    tasks = relationship("TaskModel" , back_populates="user")
