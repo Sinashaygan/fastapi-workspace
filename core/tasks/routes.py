@@ -15,13 +15,16 @@ async def retrieve_tasks_list(
     completed: bool = Query(
         None, description="filter tasks based on being completed or not"
     ),
-    limit:int = Query(10 , gt=0 , le=50 , description="limiting the number of items to retrieve") ,
+    limit: int = Query(
+        10, gt=0, le=50, description="limiting the number of items to retrieve"
+    ),
+    offset: int = Query(0 , ge=0 , description="use for pagination base on passed items"),
     db: Session = Depends(get_db),
 ):
     query = db.query(TaskModel)
     if completed is not None:
         query = query.filter_by(is_completed=completed)
-    return query.limit(limit).all()
+    return query.limit(limit).offset(offset).all()
 
 
 @router.get("/tasks/{task_id}", response_model=TaskResponseSchema)
