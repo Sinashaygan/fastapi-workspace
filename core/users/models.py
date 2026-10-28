@@ -19,14 +19,12 @@ class UserModel(Base):
 
     tasks = relationship("TaskModel" , back_populates="user")
 
-    def hash_password(password: str) -> str:
-        """پسورد متنی را دریافت کرده و نسخه هش‌شده آن را برمی‌گرداند."""
+    def hash_password(self, password: str) -> str:
         return pwd_context.hash(password)
 
+    def verify_password(self, plain_password: str) -> bool:
+        return pwd_context.verify(plain_password, self.password)
 
-    def verify_password(plain_password: str, hashed_password: str) -> bool:
-        """پسورد وارد شده توسط کاربر را با پسورد هش‌شده داخل دیتابیس مقایسه می‌کند."""
-        return pwd_context.verify(plain_password, hashed_password)
-
-    def set_password(self,plain_text:str)->None:
+    def set_password(self, plain_text: str) -> None:
         self.password = self.hash_password(plain_text)
+
