@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+
+# محیط مجازی
+.venv/
+venv/
+env/
+
+# فایل‌های محیطی و محرمانه
+.env
+.env.*
+!.env.example
+
+# ابزارها و تنظیمات ویرایشگر
+.vscode/
+.idea/
+*.swp
+
+# تست و پوشش کد
+.pytest_cache/
+.coverage
+htmlcov/
+
+# سیستم‌عامل
+.DS_Store
+Thumbs.db
