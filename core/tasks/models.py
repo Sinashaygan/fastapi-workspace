@@ -9,5 +9,6 @@ class TaskModel(Base):
     title = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
     is_completed = Column(Boolean, default=False)
+    
     created_date = Column(DateTime, server_default=func.now())
     updated_date = Column(DateTime, server_default=func.now(), onupdate=func.now())
