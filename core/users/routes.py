@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.responses import JSONResponse
-from users.shemas import *
+from users.schemas import *
 from users.models import UserModel
 from sqlalchemy.orm import Session
 from core.database import get_db
