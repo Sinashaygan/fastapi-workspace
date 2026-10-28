@@ -1,28 +1,37 @@
-from fastapi import APIRouter , Path
+from typing import List
+
+from fastapi import APIRouter, Depends, Path
+from fastapi.responses import JSONResponse
+from tasks.shemas import *
+from tasks.models import TaskModel
+from sqlalchemy.orm import Session
+from core.database import get_db
 
 router = APIRouter(tags=["tasks"], prefix="/todo")
 
 
-@router.get("/tasks")
-async def retrieve_tasks_list():
+@router.get("/tasks", response_model=List[TaskResponseSchema])
+async def retrieve_tasks_list(db: Session = Depends(get_db)):
     return []
 
 
-@router.get("/tasks/{task_id}")
-async def retrieve_task_by_id(task_id: int):
+@router.get("/tasks/{task_id}", response_model=TaskResponseSchema)
+async def retrieve_task_by_id(
+    task_id: int = Path(..., gt=0), db: Session = Depends(get_db)
+):
     return {"task_id": task_id}
 
 
-@router.post("/tasks")
+@router.post("/tasks", response_model=TaskResponseSchema)
 async def create_task():
     return []
 
 
-@router.put("/tasks/{task_id}")
-async def update_task(task_id: int = Path(... , gt=0)):
+@router.put("/tasks/{task_id}", response_model=TaskResponseSchema)
+async def update_task(task_id: int = Path(..., gt=0), db: Session = Depends(get_db)):
     return {}
 
 
-@router.delete("/tasks/{task_id}")
-async def delete_task(task_id: int = Path(... , gt=0)):
+@router.delete("/tasks/{task_id}", response_model=JSONResponse())
+async def delete_task(task_id: int = Path(..., gt=0), db: Session = Depends(get_db)):
     return {}
