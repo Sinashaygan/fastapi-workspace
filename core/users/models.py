@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
 from core.database import Base
 from sqlalchemy.orm import relationship
+from passlib.context import CryptContext
 
 
 class UserModel(Base):
@@ -15,3 +16,16 @@ class UserModel(Base):
     updated_date = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
     tasks = relationship("TaskModel" , back_populates="user")
+
+    # راه‌اندازی تنظیمات هشینگ با استفاده از الگوریتم bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(password: str) -> str:
+    """پسورد متنی را دریافت کرده و نسخه هش‌شده آن را برمی‌گرداند."""
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """پسورد وارد شده توسط کاربر را با پسورد هش‌شده داخل دیتابیس مقایسه می‌کند."""
+    return pwd_context.verify(plain_password, hashed_password)
