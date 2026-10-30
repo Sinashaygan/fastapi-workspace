@@ -35,7 +35,7 @@ def seed_tasks(db, user, count=10):
 def main():
     db = SessionLocal()
     try:
-        user = seed_users(db)[0]
+        user = seed_users(db)
         seed_tasks(db, user)
     finally:
         db.close()
