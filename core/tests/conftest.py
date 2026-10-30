@@ -26,7 +26,7 @@ TestSessionLocal = sessionmaker(
 
 
 # module
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="package")
 def db_session():
     db = TestSessionLocal()
     try:
@@ -61,7 +61,7 @@ def anon_client(tear_up_and_down_database):
 fake = Faker()
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="package", autouse=True)
 def generate_mock_data(db_session):
     user = UserModel(username="testuser")
     user.set_password("12345678")
