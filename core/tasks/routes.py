@@ -50,10 +50,10 @@ async def create_task(
 ):
     data = request.model_dump()
     data.update({"user_id": user.id})
-    task_obj = TaskModel(data)
+    task_obj = TaskModel(**data)
     db.add(task_obj)
     db.commit()
-    db.refresh()
+    db.refresh(task_obj)
     return task_obj
 
 
