@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import pytest
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -21,7 +22,9 @@ TestSessionLocal = sessionmaker(
 )
 
 
-def override_get_db():
+# module
+@pytest.fixture(scope="module")
+def db_session():
     db = TestSessionLocal()
     try:
         yield db
@@ -29,8 +32,24 @@ def override_get_db():
         db.close()
 
 
-app.dependency_overrides[get_db] = override_get_db
+# module
+@pytest.fixture(scope="module")
+def override_dependencies(db_session):
+    app.dependency_overrides[get_db] = lambda: db_session
+    yield
+    app.dependency_overrides.pop(get_db, None)
 
-Base.metadata.create_all(bind=engine)
 
-client = TestClient(app)
+# session
+@pytest.fixture(scope="session")
+def tear_up_and_down_database():
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
+
+# function
+@pytest.fixture(scope="function")
+def anon_client(tear_up_and_down_database):
+    client = TestClient(app)
+    yield client
