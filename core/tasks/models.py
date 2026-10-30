@@ -1,4 +1,13 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from core.database import Base
 from sqlalchemy.orm import relationship
 
@@ -11,8 +20,8 @@ class TaskModel(Base):
     title = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
     is_completed = Column(Boolean, default=False)
-    
+
     created_date = Column(DateTime, server_default=func.now())
     updated_date = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    user = relationship("UserModel" , back_populates="tasks" , uselist=False)
+    user = relationship("UserModel", back_populates="tasks", uselist=False)
