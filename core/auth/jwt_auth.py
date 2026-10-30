@@ -124,3 +124,34 @@ def generate_refresh_token(
 
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def decode_refresh_token(token, db: Session = Depends(get_db)):
+    try:
+        # PyJWT verifies the signature and expiration; exp must also be present.
+        decoded = jwt.decode(
+            token,
+            settings.JWT_SECRET_KEY,
+            algorithms=[ALGORITHM],
+            options={"require": ["exp"]},
+        )
+    except jwt.ExpiredSignatureError:
+        raise authentication_error("Authentication failed. token expired")
+    except jwt.InvalidSignatureError:
+        raise authentication_error("Authentication failed. invalid signature")
+    except jwt.DecodeError:
+        raise authentication_error("Authentication failed. Decode error")
+    except jwt.InvalidTokenError:
+        raise authentication_error("Authentication failed. invalid token")
+
+    user_id = decoded.get("user_id")
+    if not user_id:
+        raise authentication_error("Authentication failed. user id not in the payload")
+
+    if decoded.get("type") != "refresh":
+        raise authentication_error("Authentication failed. token type not valid")
+
+    user_obj = db.query(UserModel).filter_by(id=user_id).one_or_none()
+    if user_obj is None:
+        raise authentication_error("User not found")
+    return user_obj
