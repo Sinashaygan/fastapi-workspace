@@ -1,5 +1,4 @@
 import secrets
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
@@ -63,8 +62,11 @@ async def user_register(request: UserRegisterSchema, db: Session = Depends(get_d
     user_obj.set_password(request.password)
     db.add(user_obj)
     db.commit()
-    db.refresh()
-    return JSONResponse(content={"detail": "user registered successfully"})
+    db.refresh(user_obj)
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"detail": "user registered successfully"},
+    )
 
 
 @router.post("/refresh-token")
