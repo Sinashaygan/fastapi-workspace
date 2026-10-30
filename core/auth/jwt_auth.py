@@ -19,27 +19,38 @@ def get_authenticated_user(
 ):
     token = credentials.credentials
     try:
-        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms="H5256")
-        user_id = decoded.get("user_id", None)
+        # اصلاح نام الگوریتم به "HS256"
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        
+        user_id = decoded.get("user_id")
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authentication failed. user id not in the payload",
             )
-        if not decoded.get("type") != "access":
+            
+        # بررسی نوع توکن (باید دقیقا access باشد)
+        if decoded.get("type") != "access":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authentication failed. token type not valid",
             )
-        if not datetime.fromtimestamp(decoded.get("exp")) < datetime.now():
+
+        # نکته: pyjwt خودش زمان exp را چک می‌کند و نیازی به چک دستی نیست.
+        
+        user_obj = db.query(UserModel).filter_by(id=user_id).one_or_none()
+        if not user_obj:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication failed. token expired",
+                detail="User not found",
             )
-
-        user_obj = db.query(UserModel).filter_by(id=user_id).one()
         return user_obj
 
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication failed. token expired",
+        )
     except jwt.InvalidSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -50,13 +61,13 @@ def get_authenticated_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed. Decode error",
         )
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed. {e}",
+            detail=f"Authentication failed. {str(e)}",
         )
-
-    return None
 
 
 def generate_access_token(
