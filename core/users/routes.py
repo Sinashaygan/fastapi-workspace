@@ -32,7 +32,7 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
         )
     if not user_obj.verify_password(request.password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="password is invalid"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="password is invalid"
         )
 
     # token_obj = TokenModel(userId=user_obj.id, token=generate_random_token())
@@ -44,11 +44,12 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
     refresh_token = generate_refresh_token(user_obj.id)
 
     return JSONResponse(
+        status_code=status.HTTP_200_OK,
         content={
             "detail": "logged in successfully",
             "access_token": access_token,
             "refresh_token": refresh_token,
-        }
+        },
     )
 
 
@@ -70,9 +71,7 @@ async def user_register(request: UserRegisterSchema, db: Session = Depends(get_d
 
 
 @router.post("/refresh-token")
-async def user_refresh_token(
-    request: UserRefreshTokenSchema, db: Session = Depends(get_db)
-):
+async def user_refresh_token(request: UserRefreshTokenSchema):
     user_id = decode_refresh_token(request.refresh_token)
     access_token = generate_access_token(user_id)
 
