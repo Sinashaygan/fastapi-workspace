@@ -33,7 +33,7 @@ def db_session():
 
 
 # module
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module", autouse=True)
 def override_dependencies(db_session):
     app.dependency_overrides[get_db] = lambda: db_session
     yield
@@ -41,7 +41,7 @@ def override_dependencies(db_session):
 
 
 # session
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def tear_up_and_down_database():
     Base.metadata.create_all(bind=engine)
     yield
