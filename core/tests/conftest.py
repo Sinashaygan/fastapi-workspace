@@ -1,9 +1,12 @@
+from faker import Faker
 from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
 from core.database import Base, get_db
+from tasks.models import TaskModel
+from users.models import UserModel
 from main import app
 
 
@@ -53,3 +56,30 @@ def tear_up_and_down_database():
 def anon_client(tear_up_and_down_database):
     client = TestClient(app)
     yield client
+
+
+fake = Faker()
+
+
+@pytest.fixture(scope="module", autouse=True)
+def generate_mock_data(db_session):
+    user = UserModel(username=fake.user_name())
+    user.set_password("12345678")
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    print(f"User created with Username: {user.username} and ID: {user.id}")
+
+    tasks_list = []
+    for _ in range(10):
+        tasks_list.append(
+            TaskModel(
+                user_id=user.id,
+                title=fake.sentence(nb_words=6),  # Generate a random title
+                description=fake.text(),  # Generate a random description
+                is_completed=fake.boolean(),  # Random boolean value
+            )
+        )
+    db_session.add_all(tasks_list)
+    db_session.commit()
+    print(f"added 10 tasks for user id {user.id}")
