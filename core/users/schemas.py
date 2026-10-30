@@ -19,3 +19,7 @@ class UserRegisterSchema(BaseModel):
         if value != password:
             raise ValueError("passwords does not match")
         return value
+
+
+class UserRefreshTokenSchema(BaseModel):
+    refresh_token:str = Field(... ,description="refresh token of the user" )
