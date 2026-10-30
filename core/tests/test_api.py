@@ -14,7 +14,7 @@ def test_login_invalid_data_response_401(anon_client):
     assert response.status_code == 401
 
 
-def test_login_response_201(anon_client):
+def test_login_response_200(anon_client):
     register_payload = {
         "username": "sinashaygan",
         "password": "23041385",
@@ -34,7 +34,7 @@ def test_login_response_201(anon_client):
 
 def test_register_response_201(anon_client):
     payload = {
-        "username": "sinashaygan",
+        "username": "mahtavafajo",
         "password": "23041385",
         "password_confirm": "23041385",
     }
