@@ -4,6 +4,8 @@ from auth.jwt_auth import get_authenticated_user
 from users.models import UserModel
 from tasks.routes import router as tasks_routes
 from users.routes import router as users_routes
+from fastapi.middleware.cors import CORSMiddleware
+
 
 tags_metadata = [
     {
@@ -39,3 +41,19 @@ def public_route():
 @app.get("/private")
 def private_route(current_user: UserModel = Depends(get_authenticated_user)):
     return {"message": "This is a private route."}
+
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # یا استفاده از متغیر origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
