@@ -10,64 +10,53 @@ from users.models import UserModel
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 5
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24
-security = HTTPBearer(scheme_name="Token")
+security = HTTPBearer(scheme_name="Token", auto_error=False)
+
+
+def authentication_error(detail: str) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=detail,
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
 
 def get_authenticated_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: Session = Depends(get_db),
-):
+) -> UserModel:
+    if credentials is None:
+        raise authentication_error("Not authenticated")
+
     token = credentials.credentials
     try:
-        # اصلاح نام الگوریتم به "HS256"
-        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[ALGORITHM])
-        
-        user_id = decoded.get("user_id")
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication failed. user id not in the payload",
-            )
-            
-        # بررسی نوع توکن (باید دقیقا access باشد)
-        if decoded.get("type") != "access":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication failed. token type not valid",
-            )
-
-        # نکته: pyjwt خودش زمان exp را چک می‌کند و نیازی به چک دستی نیست.
-        
-        user_obj = db.query(UserModel).filter_by(id=user_id).one_or_none()
-        if not user_obj:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found",
-            )
-        return user_obj
-
+        # PyJWT verifies the signature and expiration; exp must also be present.
+        decoded = jwt.decode(
+            token,
+            settings.JWT_SECRET_KEY,
+            algorithms=[ALGORITHM],
+            options={"require": ["exp"]},
+        )
     except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed. token expired",
-        )
+        raise authentication_error("Authentication failed. token expired")
     except jwt.InvalidSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed. invalid signature",
-        )
+        raise authentication_error("Authentication failed. invalid signature")
     except jwt.DecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed. Decode error",
-        )
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed. {str(e)}",
-        )
+        raise authentication_error("Authentication failed. Decode error")
+    except jwt.InvalidTokenError:
+        raise authentication_error("Authentication failed. invalid token")
+
+    user_id = decoded.get("user_id")
+    if not user_id:
+        raise authentication_error("Authentication failed. user id not in the payload")
+
+    if decoded.get("type") != "access":
+        raise authentication_error("Authentication failed. token type not valid")
+
+    user_obj = db.query(UserModel).filter_by(id=user_id).one_or_none()
+    if user_obj is None:
+        raise authentication_error("User not found")
+    return user_obj
 
 
 def generate_access_token(
@@ -87,7 +76,7 @@ def generate_access_token(
     now = datetime.now(timezone.utc)
 
     # تعیین زمان انقضا
-    if expires_delta:
+    if expires_delta is not None:
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -120,7 +109,7 @@ def generate_refresh_token(
     """
     now = datetime.now(timezone.utc)
 
-    if expires_delta:
+    if expires_delta is not None:
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
