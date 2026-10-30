@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
-from auth.jwt_auth import generate_access_token, generate_refresh_token
+from auth.jwt_auth import decode_refresh_token, generate_access_token, generate_refresh_token
 from users.schemas import *
 from users.models import TokenModel, UserModel
 from sqlalchemy.orm import Session
@@ -61,3 +61,11 @@ async def user_register(request: UserRegisterSchema, db: Session = Depends(get_d
     db.commit()
     db.refresh()
     return JSONResponse(content={"detail": "user registered successfully"})
+
+
+@router.post("/refresh-token")
+async def user_refresh_token(request: UserRefreshTokenSchema, db: Session = Depends(get_db)):
+    user_id = decode_refresh_token(request.refresh_token)
+    access_token = generate_access_token(user_id)
+
+    return JSONResponse(content={"access_token": access_token})
