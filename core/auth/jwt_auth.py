@@ -37,7 +37,7 @@ def get_authenticated_user(
                 detail="Authentication failed. token expired",
             )
 
-        user_obj = db.query(UserModel).filter(id=user_id).one()
+        user_obj = db.query(UserModel).filter_by(id=user_id).one()
         return user_obj
 
     except jwt.InvalidSignatureError:
