@@ -63,7 +63,7 @@ fake = Faker()
 
 @pytest.fixture(scope="module", autouse=True)
 def generate_mock_data(db_session):
-    user = UserModel(username=fake.user_name())
+    user = UserModel(username="testuser")
     user.set_password("12345678")
     db_session.add(user)
     db_session.commit()
