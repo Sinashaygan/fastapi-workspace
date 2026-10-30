@@ -29,7 +29,7 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
     user_obj = db.query(UserModel).filter_by(username=request.username).first()
     if not user_obj:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="username does not exist."
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="username does not exist."
         )
     if not user_obj.verify_password(request.password):
         raise HTTPException(
@@ -57,7 +57,7 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
 async def user_register(request: UserRegisterSchema, db: Session = Depends(get_db)):
     if db.query(UserModel).filter_by(username=request.username).first():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="username already exist."
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="username already exist."
         )
     user_obj = UserModel(username=request.username.lower())
     user_obj.set_password(request.password)
