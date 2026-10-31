@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
+from auth.jwt_auth import generate_access_token
 from core.database import Base, get_db
 from tasks.models import TaskModel
 from users.models import UserModel
@@ -53,9 +54,20 @@ def tear_up_and_down_database():
 
 # function
 @pytest.fixture(scope="function")
-def anon_client(tear_up_and_down_database):
+def anon_client():
     client = TestClient(app)
     yield client
+
+
+# function
+@pytest.fixture(scope="function")
+def auth_client(db_session):
+    client = TestClient(app)
+    user = db_session.query(UserModel).filter_by(username="testuser").first()
+    access_token = generate_access_token(user.id)
+    client.headers.update({"Authorization": f"Bearer {access_token}"})
+    yield client
+
 
 
 fake = Faker()
