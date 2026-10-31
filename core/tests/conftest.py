@@ -53,21 +53,20 @@ def tear_up_and_down_database():
 
 
 # function
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="package")
 def anon_client():
     client = TestClient(app)
     yield client
 
 
 # function
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="package")
 def auth_client(db_session):
     client = TestClient(app)
     user = db_session.query(UserModel).filter_by(username="testuser").first()
     access_token = generate_access_token(user.id)
     client.headers.update({"Authorization": f"Bearer {access_token}"})
     yield client
-
 
 
 fake = Faker()
@@ -95,3 +94,10 @@ def generate_mock_data(db_session):
     db_session.add_all(tasks_list)
     db_session.commit()
     print(f"added 10 tasks for user id {user.id}")
+
+
+@pytest.fixture(scope="function")
+def random_task(db_session):
+    user = db_session.query(UserModel).filter_by(username="testuser").first()
+    task = db_session.query(TaskModel).filter_by(user_id=user.id).first()
+    return task
