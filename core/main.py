@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from auth.jwt_auth import get_authenticated_user
 from users.models import UserModel
 from tasks.routes import router as tasks_routes
@@ -56,3 +58,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    error_response = {
+        "error": True,
+        "status_code": exc.status_code,
+        "detail": str(exc.detail),
+    }
+    return JSONResponse(status_code=exc.status_code, content=error_response)
