@@ -10,6 +10,13 @@ from users.models import UserModel
 from tasks.routes import router as tasks_routes
 from users.routes import router as users_routes
 from fastapi.middleware.cors import CORSMiddleware
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+
+scheduler = AsyncIOScheduler()
+
+def my_task():
+   print(f"Task executed at {time.strftime("%Y-%n-%d %H:%H:%S")}")
 
 tags_metadata = [
     {
