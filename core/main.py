@@ -76,6 +76,6 @@ async def http_validation_exception_handler(request, exc):
     error_response = {
         "error": True,
         "status_code": status.HTTP_422_UNPROCESSABLE_CONTENT,
-        "detail": str(exc.errors()),
+        "detail": "There was problem with your form request.",
     }
     return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, content=error_response)
