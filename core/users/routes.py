@@ -1,5 +1,4 @@
 import secrets
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
@@ -29,11 +28,11 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
     user_obj = db.query(UserModel).filter_by(username=request.username).first()
     if not user_obj:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="username does not exist."
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="username does not exist."
         )
     if not user_obj.verify_password(request.password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="password is invalid"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="password is invalid"
         )
 
     # token_obj = TokenModel(userId=user_obj.id, token=generate_random_token())
@@ -45,11 +44,12 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
     refresh_token = generate_refresh_token(user_obj.id)
 
     return JSONResponse(
+        status_code=status.HTTP_200_OK,
         content={
             "detail": "logged in successfully",
             "access_token": access_token,
             "refresh_token": refresh_token,
-        }
+        },
     )
 
 
@@ -57,20 +57,21 @@ async def user_login(request: UserLoginSchema, db: Session = Depends(get_db)):
 async def user_register(request: UserRegisterSchema, db: Session = Depends(get_db)):
     if db.query(UserModel).filter_by(username=request.username).first():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="username already exist."
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="username already exist."
         )
     user_obj = UserModel(username=request.username.lower())
     user_obj.set_password(request.password)
     db.add(user_obj)
     db.commit()
-    db.refresh()
-    return JSONResponse(content={"detail": "user registered successfully"})
+    db.refresh(user_obj)
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"detail": "user registered successfully"},
+    )
 
 
 @router.post("/refresh-token")
-async def user_refresh_token(
-    request: UserRefreshTokenSchema, db: Session = Depends(get_db)
-):
+async def user_refresh_token(request: UserRefreshTokenSchema):
     user_id = decode_refresh_token(request.refresh_token)
     access_token = generate_access_token(user_id)
 
