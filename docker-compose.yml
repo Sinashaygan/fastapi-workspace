@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: backend
+    ports:
+      - "8000:8000"
+    command: bash -c 'fastapi dev --host 0.0.0.0 --port 8000'
+    volumes:
+      - ./core:/usr/src/core
+    # environment:
+    #   DATABASE_URL: 
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
