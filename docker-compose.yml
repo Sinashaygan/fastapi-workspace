@@ -9,13 +9,15 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres_data/data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 5s
       timeout: 3s
       retries: 10
       start_period: 10s
+    ports:
+      - "5433:5432"
 
   api:
     build:
@@ -27,8 +29,9 @@ services:
     command: bash -c 'fastapi dev --host 0.0.0.0 --port 8000'
     volumes:
       - ./core:/usr/src/core
-    # environment:
-    #   DATABASE_URL: 
+    environment:
+      SQLALCHEMY_DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
+      JWT_SECRET_KEY: r-0g92-fdv2q57i8zebj(_d)6oxudr)@^shq(a)*3+us%tr313 
     depends_on:
       db:
         condition: service_healthy
