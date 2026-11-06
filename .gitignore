@@ -30,3 +30,5 @@ htmlcov/
 # سیستم‌عامل
 .DS_Store
 Thumbs.db
+
+/postgres_data/data
