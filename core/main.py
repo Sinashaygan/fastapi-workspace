@@ -14,11 +14,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from fastapi_cache import FastAPICache
-from fastapi_cache.backends.inmemory import InMemoryBackend
+from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
+from redis import asyncio as aioredis
 
-cache_backend = InMemoryBackend()
-FastAPICache.init(cache_backend)
+redis = aioredis.from_url("redis://localhost")
+cache_backend = RedisBackend(redis)
+FastAPICache.init(cache_backend , prefix="fastapi-cache")
 
 
 scheduler = AsyncIOScheduler()
