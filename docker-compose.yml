@@ -44,6 +44,7 @@ services:
     environment:
       SQLALCHEMY_DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
       JWT_SECRET_KEY: r-0g92-fdv2q57i8zebj(_d)6oxudr)@^shq(a)*3+us%tr313 
+      REDIS_URL: "redis://redis:6379"
     depends_on:
       db:
         condition: service_healthy

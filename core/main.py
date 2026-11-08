@@ -8,6 +8,7 @@ import httpx
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from auth.jwt_auth import get_authenticated_user
+from core.config import settings
 from users.models import UserModel
 from tasks.routes import router as tasks_routes
 from users.routes import router as users_routes
@@ -19,7 +20,7 @@ from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 from redis import asyncio as aioredis
 
-redis = aioredis.from_url("redis://localhost")
+redis = aioredis.from_url(settings.REDIS_URL)
 cache_backend = RedisBackend(redis)
 FastAPICache.init(cache_backend, prefix="fastapi-cache")
 
