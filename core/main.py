@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 import random
 import time
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
@@ -21,6 +22,13 @@ from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 from redis import asyncio as aioredis
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 redis = aioredis.from_url(settings.REDIS_URL)
 cache_backend = RedisBackend(redis)
 FastAPICache.init(cache_backend, prefix="fastapi-cache")
@@ -41,7 +49,10 @@ scheduler = AsyncIOScheduler(jobstores=jobstores)
 
 
 def my_task():
-    print(f"Task executed at {time.strftime('%Y-%n-%d %H:%H:%S')}")
+    logger.info(
+        "Task executed at %s",
+        time.strftime("%Y-%m-%d %H:%M:%S"),
+    )
 
 
 tags_metadata = [
@@ -58,14 +69,20 @@ tags_metadata = [
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Application startup")
+    logger.info("Application startup")
+
     scheduler.add_job(
-        my_task, IntervalTrigger(seconds=10), id="my_task", replace_existing=True
+        my_task,
+        IntervalTrigger(seconds=10),
+        id="my_task",
+        replace_existing=True,
     )
     scheduler.start()
+
     yield
+
     scheduler.shutdown()
-    print("Application shutdown")
+    logger.info("Application shutdown")
 
 
 app = FastAPI(lifespan=lifespan, openapi_tags=tags_metadata)
@@ -127,9 +144,9 @@ task_counter = 1
 
 
 def start_task(task_id):
-    print(f"doing the process: {task_id}")
+    logger.info("Doing the process: %s", task_id)
     time.sleep(random.randint(3, 10))
-    print(f"finished task {task_id}")
+    logger.info("Finished task %s", task_id)
 
 
 async def request_current_weather(latitude: float, longitude: float):
