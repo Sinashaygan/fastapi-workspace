@@ -33,11 +33,12 @@ jobstores = {
         run_times_key="apscheduler.run_times",
         host="redis",
         port=6379,
-        db=1
+        db=1,
     )
 }
 
 scheduler = AsyncIOScheduler(jobstores=jobstores)
+
 
 def my_task():
     print(f"Task executed at {time.strftime('%Y-%n-%d %H:%H:%S')}")
@@ -58,7 +59,9 @@ tags_metadata = [
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Application startup")
-    scheduler.add_job(my_task, IntervalTrigger(seconds=10))
+    scheduler.add_job(
+        my_task, IntervalTrigger(seconds=10), id="my_task", replace_existing=True
+    )
     scheduler.start()
     yield
     scheduler.shutdown()
