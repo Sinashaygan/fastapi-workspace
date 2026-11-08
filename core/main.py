@@ -14,6 +14,7 @@ from tasks.routes import router as tasks_routes
 from users.routes import router as users_routes
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.triggers.interval import IntervalTrigger
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
@@ -25,8 +26,18 @@ cache_backend = RedisBackend(redis)
 FastAPICache.init(cache_backend, prefix="fastapi-cache")
 
 
-scheduler = AsyncIOScheduler()
+# Initialize Redis Job store for APScheduler:
+jobstores = {
+    "default": RedisJobStore(
+        jobs_key="apscheduler.jobs",
+        run_times_key="apscheduler.run_times",
+        host="redis",
+        port=6379,
+        db=1
+    )
+}
 
+scheduler = AsyncIOScheduler(jobstores=jobstores)
 
 def my_task():
     print(f"Task executed at {time.strftime('%Y-%n-%d %H:%H:%S')}")
