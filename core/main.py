@@ -4,6 +4,7 @@ import time
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 import fastapi_cache
+import httpx
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from auth.jwt_auth import get_authenticated_user
@@ -20,7 +21,7 @@ from redis import asyncio as aioredis
 
 redis = aioredis.from_url("redis://localhost")
 cache_backend = RedisBackend(redis)
-FastAPICache.init(cache_backend , prefix="fastapi-cache")
+FastAPICache.init(cache_backend, prefix="fastapi-cache")
 
 
 scheduler = AsyncIOScheduler()
@@ -116,9 +117,41 @@ def start_task(task_id):
     print(f"finished task {task_id}")
 
 
+async def request_current_weather(latitude: float, longitude: float):
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current_weather=true"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url)
+            if response.status_code == 200:
+                return response.json().get("current_weather")
+        except Exception:
+            pass
+    return None
+
+
 @app.get("/initiate-task", status_code=200)
 async def initiate_task(background_tasks: BackgroundTasks):
     global task_counter
     background_tasks.add_task(start_task, task_id=task_counter)
     task_counter += 1
     return JSONResponse(content={"detail": "task is done"})
+
+
+@app.get("/fetch-tehran-weather", status_code=200)
+@cache(expire=30)  # کش کردن پاسخ به مدت ۳۰ ثانیه در ردیس
+async def fetch_tehran_weather():
+    # مختصات تهران: عرض ۳۵.۶۸۹۲ و طول ۵۱.۳۸۹۰
+    latitude = 35.6892
+    longitude = 51.3890
+
+    current_weather = await request_current_weather(latitude, longitude)
+
+    if current_weather:
+        return JSONResponse(
+            content={"city": "Tehran", "current_weather": current_weather}
+        )
+    else:
+        return JSONResponse(
+            content={"detail": "Failed to fetch weather"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
