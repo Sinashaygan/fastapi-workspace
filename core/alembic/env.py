@@ -16,10 +16,13 @@ config = context.config
 BASE_DIR = Path(__file__).parent.parent
 ENV_PATH = BASE_DIR / ".env"
 
-# بارگذاری متغیرهای محیطی
-load_dotenv(ENV_PATH)
+# بارگذاری از فایل .env در صورت وجود
+if ENV_PATH.exists():
+    load_dotenv(ENV_PATH)
+else:
+    load_dotenv()
 
-# خواندن آدرس دیتابیس از .env و ست کردن روی تنظیمات alembic
+# خواندن آدرس دیتابیس (چه از .env و چه از متغیرهای سیستم/داکر)
 database_url = os.getenv("SQLALCHEMY_DATABASE_URL")
 if database_url:
     config.set_main_option("sqlalchemy.url", database_url)
