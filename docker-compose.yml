@@ -19,6 +19,18 @@ services:
     ports:
       - "5433:5432"
 
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   api:
     build:
       context: .
@@ -34,6 +46,8 @@ services:
       JWT_SECRET_KEY: r-0g92-fdv2q57i8zebj(_d)6oxudr)@^shq(a)*3+us%tr313 
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:
