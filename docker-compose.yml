@@ -32,7 +32,7 @@ services:
       retries: 5
 
   smtp4dev:
-    image: rnwood/smtp4dev:v3
+    image: docker.arvancloud.ir/rnwood/smtp4dev:v3
     container_name: smtp4dev
     restart: always
     ports:
