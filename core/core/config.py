@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     MAIL_USERNAME: str = ""  # اصلاح شده (بدون پرانتز و کاما)
     MAIL_PASSWORD: str = ""  # اصلاح شده
     MAIL_FROM: str = "from@example.com"  # اصلاح شده
-    MAIL_PORT: int = 2525  # پورت داکر برای smtp4dev (یا 25)
+    MAIL_PORT: int = 25  # پورت داکر برای smtp4dev (یا 25)
     MAIL_SERVER: str = "smtp4dev"  # اصلاح شده
     MAIL_FROM_NAME: str = "FastAPI Mailer"  # اصلاح شده
     MAIL_STARTTLS: bool = False  # اصلاح شده
