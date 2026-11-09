@@ -10,6 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from auth.jwt_auth import get_authenticated_user
 from core.config import settings
+from core.email_util import send_email
 from users.models import UserModel
 from tasks.routes import router as tasks_routes
 from users.routes import router as users_routes
@@ -187,3 +188,14 @@ async def fetch_tehran_weather():
             content={"detail": "Failed to fetch weather"},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+
+@app.get("/send-mail", status_code=200)
+async def test_send_mail():
+    await send_email(
+        subject="Test Email from FastAPI",
+        recipients=["recipient@example.com"],
+        body="This is a test email sent using the email_util function."
+    )
+    return JSONResponse(content={"detail": "Email has been sent"})
