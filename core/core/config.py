@@ -10,15 +10,15 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "test"
     REDIS_URL: str
 
-    MAIL_USERNAME: str = ("",)  # در smtp4dev نیازی به یوزرنام نیست
-    MAIL_PASSWORD: str = ("",)  # در smtp4dev نیازی به پسورد نیست
-    MAIL_FROM: str = ("from@example.com",)  # ایمیل فرستنده نمایشی
-    MAIL_PORT: int = (25,)  # پورت ۲۵ برای smtp4dev
-    MAIL_SERVER: str = ("smtp4dev",)  # نام سرویس در داکر کامپوز
-    MAIL_FROM_NAME: str = ("FastAPI Mailer",)
-    MAIL_STARTTLS: bool = (False,)  # در smtp4dev نیازی به TLS نیست
-    MAIL_SSL_TLS: bool = (False,)  # در smtp4dev نیازی به SSL نیست
-    USE_CREDENTIALS: bool = False  # چون احراز هویت ندارد False می‌شود
+    MAIL_USERNAME: str = ""  # اصلاح شده (بدون پرانتز و کاما)
+    MAIL_PASSWORD: str = ""  # اصلاح شده
+    MAIL_FROM: str = "from@example.com"  # اصلاح شده
+    MAIL_PORT: int = 2525  # پورت داکر برای smtp4dev (یا 25)
+    MAIL_SERVER: str = "smtp4dev"  # اصلاح شده
+    MAIL_FROM_NAME: str = "FastAPI Mailer"  # اصلاح شده
+    MAIL_STARTTLS: bool = False  # اصلاح شده
+    MAIL_SSL_TLS: bool = False  # اصلاح شده
+    USE_CREDENTIALS: bool = False
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
