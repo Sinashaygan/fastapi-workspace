@@ -9,5 +9,5 @@ celery_app = Celery(
 
 
 @celery_app.task
-def hello():
-    return "hello world"
+def add_number(x, y):
+    return x + y
