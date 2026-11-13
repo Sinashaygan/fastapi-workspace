@@ -7,6 +7,8 @@ celery_app = Celery(
     backend=settings.CELERY_BACKEND_URL,
 )
 
+celery_app.conf.update(broker_connection_retry_on_startup=True)
+
 
 @celery_app.task
 def add_number(x, y):

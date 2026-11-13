@@ -8,7 +8,7 @@ import httpx
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from auth.jwt_auth import get_authenticated_user
-from core.celery_config import add_number
+from core.celery_conf import add_number
 from core.config import settings
 from core.email_util import send_email
 from users.models import UserModel

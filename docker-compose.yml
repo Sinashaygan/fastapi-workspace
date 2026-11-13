@@ -77,7 +77,7 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     container_name: celery_worker
-    command: bash -c 'celery -A core.celery_config:app worker --loglevel=info'
+    command: bash -c 'celery -A core.celery_conf:app worker --loglevel=info'
     volumes:
       - ./core:/usr/src/core
     environment:
