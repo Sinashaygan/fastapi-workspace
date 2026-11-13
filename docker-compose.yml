@@ -71,6 +71,25 @@ services:
       redis:
         condition: service_healthy
 
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: celery_worker
+    command: bash -c 'celery -A core.celery_config:app worker --loglevel=info'
+    volumes:
+      - ./core:/usr/src/core
+    environment:
+      SQLALCHEMY_DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
+      JWT_SECRET_KEY: r-0g92-fdv2q57i8zebj(_d)6oxudr)@^shq(a)*3+us%tr313 
+      REDIS_URL: "redis://redis:6379"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   smtp4dev-data:
