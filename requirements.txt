@@ -88,3 +88,4 @@ websockets==17.3
 fastapi-mail[httpx]
 psycopg[binary]
 locust
+celery[redis]
