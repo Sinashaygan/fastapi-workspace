@@ -200,7 +200,7 @@ async def test_send_mail():
     return JSONResponse(content={"detail": "Email has been sent"})
 
 
-@app.get("initiate-celery-tasks", status_code=200)
+@app.get("/initiate-celery-tasks", status_code=200)
 async def initiate_celery_tasks():
     add_number.delay(1, 2)
     return JSONResponse(content={"detail": "task is done"})
