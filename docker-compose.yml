@@ -42,6 +42,14 @@ services:
     volumes:
       - smtp4dev-data:/smtp4dev
 
+  locust:
+    image: docker.arvancloud.ir/locustio/locust
+    container_name: locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./core/locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py
 
   api:
     build:

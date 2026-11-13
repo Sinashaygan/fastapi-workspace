@@ -4,7 +4,6 @@ import random
 import time
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
-import fastapi_cache
 import httpx
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
