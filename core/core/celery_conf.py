@@ -14,7 +14,7 @@ celery_app.conf.update(
     timezone="UTC",
     beat_schedule={
         "print-hello-every-minute": {
-            "task": "app.tasks.print_hello",
+            "task": "core.celery_conf.print_hello",
             "schedule": 60,  # every minute
         },
     },
