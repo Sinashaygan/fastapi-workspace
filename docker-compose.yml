@@ -110,7 +110,7 @@ services:
         condition: service_healthy
 
   flower:
-    image: mher/flower:0.9.7
+    image: docker.arvancloud.ir/mher/flower:0.9.7
     command: ['flower', '--broker=redis://redis:6379/3', '--port=5555']
     ports:
       - "127.0.0.1:5555:5555"
