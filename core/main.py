@@ -8,6 +8,7 @@ import httpx
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from auth.jwt_auth import get_authenticated_user
+from core.celery_conf import add_number
 from core.config import settings
 from core.email_util import send_email
 from users.models import UserModel
@@ -189,12 +190,17 @@ async def fetch_tehran_weather():
         )
 
 
-
 @app.get("/send-mail", status_code=200)
 async def test_send_mail():
     await send_email(
         subject="Test Email from FastAPI",
         recipients=["recipient@example.com"],
-        body="This is a test email sent using the email_util function."
+        body="This is a test email sent using the email_util function.",
     )
     return JSONResponse(content={"detail": "Email has been sent"})
+
+
+@app.get("/initiate-celery-tasks", status_code=200)
+async def initiate_celery_tasks():
+    add_number.delay(1, 2)
+    return JSONResponse(content={"detail": "task is done"})
